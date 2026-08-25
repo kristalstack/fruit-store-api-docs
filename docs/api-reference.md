@@ -1,4 +1,4 @@
-# API Reference
+# Fruit Store API Reference
 
 The Fruit Store API provides endpoints for user authentication, product management, purchases, and invoices.
 
@@ -20,8 +20,8 @@ Authorization: Bearer <JWT_TOKEN>
 
 The API supports two access levels:
 
-- **User:** Can access their account information, purchase products, and view their invoices.
-- **Admin:** Can access user functionality and manage the product catalog.
+* **User:** Can access account information, purchase products, and view their own invoices.
+* **Admin:** Can access user functionality, manage products, and view all invoices.
 
 ---
 
@@ -37,7 +37,7 @@ Checks whether the Fruit Store API is running.
 
 **Authentication:** Not required
 
-### Response
+### Successful response
 
 ```json
 {
@@ -64,10 +64,10 @@ Creates a new user account. New accounts are assigned the `user` role.
 
 ### Request body
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `username` | string | Yes | Username for the new account |
-| `password` | string | Yes | Password for the new account |
+| Field      | Type   | Required | Description                  |
+| ---------- | ------ | -------- | ---------------------------- |
+| `username` | string | Yes      | Username for the new account |
+| `password` | string | Yes      | Password for the new account |
 
 ### Example request
 
@@ -96,9 +96,9 @@ Creates a new user account. New accounts are assigned the `user` role.
 
 ### Possible errors
 
-- `400 Bad Request` — Required credentials are missing or invalid.
-- `409 Conflict` — The username already exists.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `400 Bad Request` — The request body is missing or the credentials are invalid.
+* `409 Conflict` — The username already exists.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
@@ -114,10 +114,10 @@ Authenticates an existing user and returns a JWT token.
 
 ### Request body
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `username` | string | Yes | Account username |
-| `password` | string | Yes | Account password |
+| Field      | Type   | Required | Description      |
+| ---------- | ------ | -------- | ---------------- |
+| `username` | string | Yes      | Account username |
+| `password` | string | Yes      | Account password |
 
 ### Example request
 
@@ -146,9 +146,9 @@ Authenticates an existing user and returns a JWT token.
 
 ### Possible errors
 
-- `400 Bad Request` — Required credentials are missing or invalid.
-- `401 Unauthorized` — The username or password is incorrect.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `400 Bad Request` — The request body is missing or the credentials are invalid.
+* `401 Unauthorized` — The username or password is incorrect.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
@@ -185,14 +185,14 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### Possible errors
 
-- `401 Unauthorized` — The authentication token is missing, expired, or invalid.
-- `500 Internal Server Error` — An unexpected server error occurred during authentication.
+* `401 Unauthorized` — The authentication token is missing, expired, invalid, or belongs to a user that no longer exists.
+* `500 Internal Server Error` — An unexpected server error occurred during authentication.
 
 ---
 
 # Products
 
-Product management endpoints require administrator access.
+Product-management endpoints require administrator access.
 
 ## List products
 
@@ -204,7 +204,9 @@ Returns all products in the store.
 
 **Authentication:** Admin required
 
-The endpoint checks Redis before querying the database. The `source` field indicates whether the response came from the cache or database.
+The endpoint checks Redis before querying the database.
+
+The response includes a `source` field that indicates whether the data came from the cache or the database.
 
 ### Example request
 
@@ -221,7 +223,7 @@ Authorization: Bearer <JWT_TOKEN>
     {
       "id": 1,
       "name": "Apple",
-      "price": "2.50",
+      "price": 2.5,
       "entry_date": "2026-08-01",
       "quantity": 50
     }
@@ -230,15 +232,18 @@ Authorization: Bearer <JWT_TOKEN>
 }
 ```
 
-The `source` value can be `database` or `cache`.
+The `source` value can be:
+
+* `database`
+* `cache`
 
 **Status:** `200 OK`
 
 ### Possible errors
 
-- `401 Unauthorized` — Authentication is required or the token is invalid.
-- `403 Forbidden` — Administrator access is required.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `401 Unauthorized` — Authentication is required or the token is invalid.
+* `403 Forbidden` — Administrator access is required.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
@@ -256,9 +261,9 @@ The endpoint checks Redis for the requested product before querying the database
 
 ### Path parameters
 
-| Parameter | Type | Required | Description |
-| --- | --- | --- | --- |
-| `product_id` | integer | Yes | Unique ID of the product |
+| Parameter    | Type    | Required | Description              |
+| ------------ | ------- | -------- | ------------------------ |
+| `product_id` | integer | Yes      | Unique ID of the product |
 
 ### Example request
 
@@ -274,7 +279,7 @@ Authorization: Bearer <JWT_TOKEN>
   "product": {
     "id": 1,
     "name": "Apple",
-    "price": "2.50",
+    "price": 2.5,
     "entry_date": "2026-08-01",
     "quantity": 50
   },
@@ -286,10 +291,10 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### Possible errors
 
-- `401 Unauthorized` — Authentication is required or the token is invalid.
-- `403 Forbidden` — Administrator access is required.
-- `404 Not Found` — The product does not exist.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `401 Unauthorized` — Authentication is required or the token is invalid.
+* `403 Forbidden` — Administrator access is required.
+* `404 Not Found` — The product does not exist.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
@@ -305,19 +310,19 @@ Creates a new product.
 
 ### Request body
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `name` | string | Yes | Product name |
-| `price` | number | Yes | Product price. Must be greater than zero. |
-| `entry_date` | string | Yes | Product entry date in `YYYY-MM-DD` format |
-| `quantity` | integer | Yes | Available quantity. Cannot be negative. |
+| Field        | Type    | Required | Description                               |
+| ------------ | ------- | -------- | ----------------------------------------- |
+| `name`       | string  | Yes      | Product name                              |
+| `price`      | number  | Yes      | Product price. Must be greater than zero. |
+| `entry_date` | string  | Yes      | Product entry date in `YYYY-MM-DD` format |
+| `quantity`   | integer | Yes      | Available quantity. Cannot be negative.   |
 
 ### Example request
 
 ```json
 {
   "name": "Mango",
-  "price": 3.50,
+  "price": 3.5,
   "entry_date": "2026-08-20",
   "quantity": 25
 }
@@ -331,7 +336,7 @@ Creates a new product.
   "product": {
     "id": 2,
     "name": "Mango",
-    "price": "3.50",
+    "price": 3.5,
     "entry_date": "2026-08-20",
     "quantity": 25
   }
@@ -340,14 +345,14 @@ Creates a new product.
 
 **Status:** `201 Created`
 
-Creating a product invalidates the cached product list so that subsequent requests receive current data.
+Creating a product invalidates the cached product list so that future list requests receive current data.
 
 ### Possible errors
 
-- `400 Bad Request` — The request body or product data is invalid.
-- `401 Unauthorized` — Authentication is required or the token is invalid.
-- `403 Forbidden` — Administrator access is required.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `400 Bad Request` — The request body or product data is invalid.
+* `401 Unauthorized` — Authentication is required or the token is invalid.
+* `403 Forbidden` — Administrator access is required.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
@@ -361,13 +366,22 @@ Updates an existing product.
 
 **Authentication:** Admin required
 
-> This endpoint expects all required product fields. It performs a complete product update rather than a partial update.
+This endpoint expects all required product fields and performs a complete update rather than a partial update.
 
 ### Path parameters
 
-| Parameter | Type | Required | Description |
-| --- | --- | --- | --- |
-| `product_id` | integer | Yes | Unique ID of the product |
+| Parameter    | Type    | Required | Description              |
+| ------------ | ------- | -------- | ------------------------ |
+| `product_id` | integer | Yes      | Unique ID of the product |
+
+### Request body
+
+| Field        | Type    | Required | Description                               |
+| ------------ | ------- | -------- | ----------------------------------------- |
+| `name`       | string  | Yes      | Product name                              |
+| `price`      | number  | Yes      | Product price. Must be greater than zero. |
+| `entry_date` | string  | Yes      | Product entry date in `YYYY-MM-DD` format |
+| `quantity`   | integer | Yes      | Available quantity. Cannot be negative.   |
 
 ### Example request
 
@@ -388,7 +402,7 @@ Updates an existing product.
   "product": {
     "id": 2,
     "name": "Mango",
-    "price": "3.75",
+    "price": 3.75,
     "entry_date": "2026-08-20",
     "quantity": 30
   }
@@ -401,11 +415,11 @@ Updating a product invalidates both the cached product and the cached product li
 
 ### Possible errors
 
-- `400 Bad Request` — The request body or product data is invalid.
-- `401 Unauthorized` — Authentication is required or the token is invalid.
-- `403 Forbidden` — Administrator access is required.
-- `404 Not Found` — The product does not exist.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `400 Bad Request` — The request body or product data is invalid.
+* `401 Unauthorized` — Authentication is required or the token is invalid.
+* `403 Forbidden` — Administrator access is required.
+* `404 Not Found` — The product does not exist.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
@@ -415,15 +429,15 @@ Updating a product invalidates both the cached product and the cached product li
 DELETE /products/{product_id}
 ```
 
-Deletes a product.
+Deletes an existing product.
 
 **Authentication:** Admin required
 
 ### Path parameters
 
-| Parameter | Type | Required | Description |
-| --- | --- | --- | --- |
-| `product_id` | integer | Yes | Unique ID of the product |
+| Parameter    | Type    | Required | Description              |
+| ------------ | ------- | -------- | ------------------------ |
+| `product_id` | integer | Yes      | Unique ID of the product |
 
 ### Example request
 
@@ -446,11 +460,11 @@ Deleting a product invalidates both the cached product and the cached product li
 
 ### Possible errors
 
-- `401 Unauthorized` — Authentication is required or the token is invalid.
-- `403 Forbidden` — Administrator access is required.
-- `404 Not Found` — The product does not exist.
-- `409 Conflict` — The product cannot be deleted because it is included in an invoice.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `401 Unauthorized` — Authentication is required or the token is invalid.
+* `403 Forbidden` — Administrator access is required.
+* `404 Not Found` — The product does not exist.
+* `409 Conflict` — The product cannot be deleted because it is included in an invoice.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
@@ -464,14 +478,16 @@ POST /purchase
 
 Purchases a specified quantity of a product for the authenticated user.
 
+A successful purchase creates an invoice and updates the product inventory.
+
 **Authentication:** Required
 
 ### Request body
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `product_id` | integer | Yes | ID of the product to purchase |
-| `quantity` | integer | Yes | Number of units to purchase |
+| Field        | Type    | Required | Description                   |
+| ------------ | ------- | -------- | ----------------------------- |
+| `product_id` | integer | Yes      | ID of the product to purchase |
+| `quantity`   | integer | Yes      | Number of units to purchase   |
 
 Both values must be integers greater than zero.
 
@@ -479,7 +495,7 @@ Both values must be integers greater than zero.
 
 ```json
 {
-  "product_id": 1,
+  "product_id": 2,
   "quantity": 2
 }
 ```
@@ -490,22 +506,35 @@ Both values must be integers greater than zero.
 {
   "message": "Purchase completed successfully.",
   "invoice": {
-    "...": "Invoice data"
+    "id": 10,
+    "user_id": 1,
+    "created_at": "2026-08-24T18:30:00+00:00",
+    "total": 7.0,
+    "items": [
+      {
+        "id": 21,
+        "product_id": 2,
+        "product_name": "Mango",
+        "quantity": 2,
+        "unit_price": 3.5,
+        "subtotal": 7.0
+      }
+    ]
   }
 }
 ```
 
 **Status:** `201 Created`
 
-A successful purchase changes product inventory, so the corresponding product cache and product-list cache are invalidated.
+Because a purchase changes inventory, the corresponding product cache and the product-list cache are invalidated.
 
 ### Possible errors
 
-- `400 Bad Request` — The purchase data is invalid.
-- `401 Unauthorized` — Authentication is required or the token is invalid.
-- `404 Not Found` — The requested product does not exist.
-- `409 Conflict` — There is insufficient stock to complete the purchase.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `400 Bad Request` — The request body or purchase data is invalid.
+* `401 Unauthorized` — Authentication is required or the token is invalid.
+* `404 Not Found` — The requested product does not exist.
+* `409 Conflict` — There is insufficient stock to complete the purchase.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
@@ -521,8 +550,8 @@ Returns invoice information based on the authenticated user's role.
 
 **Authentication:** Required
 
-- Users receive only their own invoices.
-- Administrators receive all invoices.
+* Regular users receive only their own invoices.
+* Administrators receive all invoices.
 
 ### Example request
 
@@ -537,7 +566,20 @@ Authorization: Bearer <JWT_TOKEN>
 {
   "invoices": [
     {
-      "...": "Invoice data"
+      "id": 10,
+      "user_id": 1,
+      "created_at": "2026-08-24T18:30:00+00:00",
+      "total": 7.0,
+      "items": [
+        {
+          "id": 21,
+          "product_id": 2,
+          "product_name": "Mango",
+          "quantity": 2,
+          "unit_price": 3.5,
+          "subtotal": 7.0
+        }
+      ]
     }
   ]
 }
@@ -547,16 +589,16 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### Possible errors
 
-- `401 Unauthorized` — Authentication is required or the token is invalid.
-- `500 Internal Server Error` — An unexpected server error occurred.
+* `401 Unauthorized` — Authentication is required or the token is invalid.
+* `500 Internal Server Error` — An unexpected server error occurred.
 
 ---
 
-# Common authentication errors
+# Authentication and Authorization Errors
 
-Protected endpoints may return the following authentication and authorization errors:
+Protected endpoints can return the following authentication and authorization errors.
 
-### Missing token
+## Missing authentication token
 
 ```json
 {
@@ -566,7 +608,9 @@ Protected endpoints may return the following authentication and authorization er
 
 **Status:** `401 Unauthorized`
 
-### Expired token
+---
+
+## Expired authentication token
 
 ```json
 {
@@ -576,7 +620,9 @@ Protected endpoints may return the following authentication and authorization er
 
 **Status:** `401 Unauthorized`
 
-### Invalid token
+---
+
+## Invalid authentication token
 
 ```json
 {
@@ -586,7 +632,21 @@ Protected endpoints may return the following authentication and authorization er
 
 **Status:** `401 Unauthorized`
 
-### Insufficient permissions
+---
+
+## Authenticated user no longer exists
+
+```json
+{
+  "error": "The authenticated user no longer exists."
+}
+```
+
+**Status:** `401 Unauthorized`
+
+---
+
+## Insufficient permissions
 
 ```json
 {
@@ -595,3 +655,134 @@ Protected endpoints may return the following authentication and authorization er
 ```
 
 **Status:** `403 Forbidden`
+
+---
+
+# Data Models
+
+## User
+
+Represents a registered user account.
+
+| Field      | Type    | Description                          |
+| ---------- | ------- | ------------------------------------ |
+| `id`       | integer | Unique user identifier               |
+| `username` | string  | User account name                    |
+| `role`     | string  | User role, such as `user` or `admin` |
+
+### Example
+
+```json
+{
+  "id": 1,
+  "username": "example_user",
+  "role": "user"
+}
+```
+
+---
+
+## Product
+
+Represents a product available in the store.
+
+| Field        | Type    | Description                       |
+| ------------ | ------- | --------------------------------- |
+| `id`         | integer | Unique product identifier         |
+| `name`       | string  | Product name                      |
+| `price`      | number  | Product price                     |
+| `entry_date` | string  | Entry date in `YYYY-MM-DD` format |
+| `quantity`   | integer | Available inventory quantity      |
+
+### Example
+
+```json
+{
+  "id": 2,
+  "name": "Mango",
+  "price": 3.5,
+  "entry_date": "2026-08-20",
+  "quantity": 25
+}
+```
+
+---
+
+## Invoice
+
+Represents a completed purchase.
+
+| Field        | Type    | Description                                       |
+| ------------ | ------- | ------------------------------------------------- |
+| `id`         | integer | Unique invoice identifier                         |
+| `user_id`    | integer | ID of the user associated with the invoice        |
+| `created_at` | string  | Invoice creation date and time in ISO 8601 format |
+| `total`      | number  | Total invoice amount                              |
+| `items`      | array   | List of items included in the invoice             |
+
+### Example
+
+```json
+{
+  "id": 10,
+  "user_id": 1,
+  "created_at": "2026-08-24T18:30:00+00:00",
+  "total": 7.0,
+  "items": [
+    {
+      "id": 21,
+      "product_id": 2,
+      "product_name": "Mango",
+      "quantity": 2,
+      "unit_price": 3.5,
+      "subtotal": 7.0
+    }
+  ]
+}
+```
+
+---
+
+## Invoice Item
+
+Represents one product included in an invoice.
+
+| Field          | Type    | Description                            |
+| -------------- | ------- | -------------------------------------- |
+| `id`           | integer | Unique invoice-item identifier         |
+| `product_id`   | integer | ID of the purchased product            |
+| `product_name` | string  | Name of the purchased product          |
+| `quantity`     | integer | Quantity purchased                     |
+| `unit_price`   | number  | Price per unit at the time of purchase |
+| `subtotal`     | number  | Total amount for this invoice item     |
+
+### Example
+
+```json
+{
+  "id": 21,
+  "product_id": 2,
+  "product_name": "Mango",
+  "quantity": 2,
+  "unit_price": 3.5,
+  "subtotal": 7.0
+}
+```
+
+---
+
+# Endpoint Summary
+
+| Method   | Endpoint                 | Access        | Description          |
+| -------- | ------------------------ | ------------- | -------------------- |
+| `GET`    | `/liveness`              | Public        | Check API status     |
+| `POST`   | `/register`              | Public        | Register a user      |
+| `POST`   | `/login`                 | Public        | Authenticate a user  |
+| `GET`    | `/me`                    | Authenticated | Get the current user |
+| `GET`    | `/products`              | Admin         | List all products    |
+| `GET`    | `/products/{product_id}` | Admin         | Get a product        |
+| `POST`   | `/products`              | Admin         | Create a product     |
+| `PUT`    | `/products/{product_id}` | Admin         | Update a product     |
+| `DELETE` | `/products/{product_id}` | Admin         | Delete a product     |
+| `POST`   | `/purchase`              | Authenticated | Purchase a product   |
+| `GET`    | `/invoices`              | Authenticated | List invoices        |
